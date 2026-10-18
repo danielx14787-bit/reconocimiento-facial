@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaceID - Reconocimiento Facial | Proyecto SENA</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#2563EB',   
+              dark: '#111827',   
+              cyan: '#06B6D4',    
+              green: '#10B981',  
+              purple: '#8B5CF6',  
+              light: '#F3F4F6',   
+              textgray: '#6B7280' 
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          animation: {
+            'scan-line': 'scan 2.8s ease-in-out infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            scan: {
+              '0%, 100%': { transform: 'translateY(0%)' },
+              '50%': { transform: 'translateY(240px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    
+    .biometric-grid {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(6, 182, 212, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(6, 182, 212, 0.08) 1px, transparent 1px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #CBD5E1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+
+<body class="bg-[#F3F4F6] text-gray-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+  <!-- (SENA INFO) -->
+  <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-xs text-blue-100 py-2 px-4 shadow-inner border-b border-blue-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="bg-emerald-500 text-gray-950 font-bold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide">SENA 2026</span>
+        <span class="font-medium">Proyecto: Reconocimiento Facial (Responsive Web con Tailwind CSS)</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleModal('deploy-modal')" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1 rounded transition duration-200">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          <span>Instrucciones Despliegue GitHub</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- SESIÓN 2: HEADER (NAVEGACIÓN RESPONSIVE)   -->
+  <header class="bg-[#2563EB] text-white shadow-lg sticky top-0 z-40 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logotipo e Identidad FaceID -->
+        <a href="#inicio" class="flex items-center gap-3 group focus:outline-none">
+          <div class="w-11 h-11 bg-white rounded-xl p-1.5 shadow-md flex items-center justify-center transform group-hover:scale-105 transition-transform duration-200">
+            <!-- Icono FaceID vectorial calcado del asset original -->
+            <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 36V22H36" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M78 36V22H64" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 64V78H36" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M78 64V78H64" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="40" cy="45" r="4.5" fill="#2563EB"/>
+              <circle cx="60" cy="45" r="4.5" fill="#2563EB"/>
+              <path d="M36 38C36 38 41 33 50 33C59 33 64 38 64 38" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
+              <path d="M37 57C41 63 50 65 53 65C59 65 63 57 63 57" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
+              <path d="M45 66C47 68 53 68 55 66" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-2xl font-extrabold tracking-tight text-white block leading-none">FaceID</span>
+            <span class="text-[10px] uppercase tracking-widest text-cyan-200 font-semibold">Biometría Segura</span>
+          </div>
+        </a>
+
+        <!-- Navegación de Escritorio (hidden en móvil, visible en md:flex) -->
+        <nav class="hidden md:flex items-center space-x-8 font-medium">
+          <a href="#inicio" class="text-white hover:text-cyan-200 transition duration-150 py-1 border-b-2 border-transparent hover:border-cyan-300">Inicio</a>
+          <a href="#servicios" class="text-white hover:text-cyan-200 transition duration-150 py-1 border-b-2 border-transparent hover:border-cyan-300">Servicios</a>
+          <a href="#tecnologia" class="text-white hover:text-cyan-200 transition duration-150 py-1 border-b-2 border-transparent hover:border-cyan-300">Tecnología</a>
+          <a href="#contacto" class="text-white hover:text-cyan-200 transition duration-150 py-1 border-b-2 border-transparent hover:border-cyan-300">Contacto</a>
+        </nav>
+
+        <!-- Botón Iniciar Sesión (Escritorio) -->
+        <div class="hidden md:flex items-center gap-4">
+          <button onclick="abrirSimulador('autenticar')" class="bg-white hover:bg-slate-100 text-[#2563EB] font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
+            Iniciar Sesión
+          </button>
+        </div>
+
+        <!-- Botón Menú Hamburguesa (visible solo en móviles: md:hidden) -->
+        <div class="flex md:hidden">
+          <button id="mobile-menu-btn" aria-label="Abrir Menú" class="p-2 rounded-xl text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-300 transition">
+            <svg id="hamburger-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg id="close-icon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Menú Desplegable Móvil -->
+    <div id="mobile-menu" class="hidden md:hidden bg-blue-700/95 backdrop-blur-md border-t border-blue-500/50 px-4 pt-4 pb-6 space-y-3">
+      <a href="#inicio" onclick="closeMobileMenu()" class="block text-white hover:bg-blue-600 px-3 py-2.5 rounded-lg text-base font-medium">Inicio</a>
+      <a href="#servicios" onclick="closeMobileMenu()" class="block text-white hover:bg-blue-600 px-3 py-2.5 rounded-lg text-base font-medium">Servicios</a>
+      <a href="#tecnologia" onclick="closeMobileMenu()" class="block text-white hover:bg-blue-600 px-3 py-2.5 rounded-lg text-base font-medium">Tecnología</a>
+      <a href="#contacto" onclick="closeMobileMenu()" class="block text-white hover:bg-blue-600 px-3 py-2.5 rounded-lg text-base font-medium">Contacto</a>
+      <div class="pt-2 border-t border-blue-600/70">
+        <button onclick="closeMobileMenu(); abrirSimulador('autenticar');" class="w-full bg-white text-[#2563EB] font-bold px-4 py-3 rounded-xl shadow text-center block">
+          Iniciar Sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL                        -->
+  <main class="flex-grow">
+
+    <!-- SESIÓN 2 & 5: HERO / BANNER PRINCIPAL (GRID RESPONSIVE 1 -> 2 COLS) -->
+    <section id="inicio" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 lg:py-20">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14 items-center">
+        
+        <!-- Columna Izquierda: Información y llamada a la acción -->
+        <div class="text-left space-y-6">
+          <div class="inline-flex items-center gap-2 bg-blue-100/90 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border border-blue-200">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+            <span>Inteligencia Artificial Biométrica v3.4</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#111827] leading-[1.15] tracking-tight">
+            Reconocimiento <span class="text-[#2563EB] inline-block">Facial</span>
+          </h1>
+
+          <p class="text-base sm:text-lg lg:text-xl text-gray-600 max-w-xl font-normal leading-relaxed">
+            Tecnología que identifica rostros de forma rápida, segura y precisa. Diseñada con estándares de alta fidelidad para control de accesos y seguridad digital.
+          </p>
+
+          <!-- Botones de Acción -->
+          <div class="flex flex-col sm:flex-row gap-4 pt-2">
+            <button onclick="abrirSimulador('demo')" class="inline-flex justify-center items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200 transform hover:-translate-y-0.5">
+              <span>Conoce más</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+
+            <button onclick="abrirSimulador('escaner')" class="inline-flex justify-center items-center gap-2 bg-white hover:bg-gray-50 text-[#111827] border border-gray-300 font-semibold px-6 py-3.5 rounded-xl shadow-sm hover:border-blue-400 transition duration-200">
+              <svg class="w-5 h-5 text-[#06B6D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <span>Simular Escaneo</span>
+            </button>
+          </div>
+
+          <!-- Micro-estadísticas de Rendimiento -->
+          <div class="grid grid-cols-3 gap-3 pt-6 border-t border-gray-200">
+            <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+              <div class="text-xl sm:text-2xl font-extrabold text-[#2563EB]">99.8%</div>
+              <div class="text-xs text-gray-500 font-medium">Precisión</div>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+              <div class="text-xl sm:text-2xl font-extrabold text-[#06B6D4]">&lt;0.2s</div>
+              <div class="text-xs text-gray-500 font-medium">Tiempo Rpta.</div>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+              <div class="text-xl sm:text-2xl font-extrabold text-[#10B981]">256-bit</div>
+              <div class="text-xs text-gray-500 font-medium">Cifrado</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Tarjeta Visual de Escaneo Facial con HUD Cyberpunk -->
+        <div class="relative">
+          <!-- Efecto de resplandor ambiental -->
+          <div class="absolute -inset-2 bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-600 rounded-3xl blur-xl opacity-30"></div>
+
+          <div class="relative bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden p-4 sm:p-5 text-white">
+            
+            <!-- Barra superior del HUD -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-mono text-cyan-300 tracking-wider">HUD // SENSOR_ACTIVO</span>
+              </div>
+              <div class="font-mono text-slate-400 text-[11px]">FPS: 60 | LATENCIA: 12ms</div>
+            </div>
+
+            <!-- Visor Biométrico con Fotografía / Puntos Faciales -->
+            <div class="relative mt-3 rounded-xl overflow-hidden bg-slate-950 aspect-[4/3] flex items-center justify-center biometric-grid">
+              
+              <!-- Rostro representativo con malla de landmarks -->
+              <div class="relative w-full h-full">
+                <!-- SVG de rostro escaneado de alta fidelidad basado en el asset proporcionado -->
+                <svg class="w-full h-full object-cover" viewBox="0 0 400 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Gradiente de fondo del visor -->
+                  <defs>
+                    <radialGradient id="faceGrad" cx="50%" cy="45%" r="45%">
+                      <stop offset="0%" stop-color="#1e293b"/>
+                      <stop offset="100%" stop-color="#090d16"/>
+                    </radialGradient>
+                    <linearGradient id="scanBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="rgba(6, 182, 212, 0)"/>
+                      <stop offset="85%" stop-color="rgba(6, 182, 212, 0.4)"/>
+                      <stop offset="100%" stop-color="#06B6D4"/>
+                    </linearGradient>
+                  </defs>
+                  
+                  <rect width="400" height="320" fill="url(#faceGrad)" />
+                  
+                  <!-- Silueta del rostro humano estilizada -->
+                  <path d="M140 100 C140 40, 260 40, 260 100 C265 140, 255 200, 235 240 C220 270, 180 270, 165 240 C145 200, 135 140, 140 100 Z" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                  <!-- Cuello y hombros -->
+                  <path d="M170 250 L150 320 L250 320 L230 250" fill="#0f172a" stroke="#1e293b"/>
+                  
+                  <!-- Puntos de referencia faciales (Landmarks) y malla vectorial -->
+                  <!-- Frente -->
+                  <circle cx="200" cy="70" r="3.5" fill="#06B6D4"/>
+                  <circle cx="170" cy="80" r="3" fill="#06B6D4"/>
+                  <circle cx="230" cy="80" r="3" fill="#06B6D4"/>
+                  <!-- Cejas -->
+                  <circle cx="165" cy="110" r="3" fill="#38BDF8"/>
+                  <circle cx="185" cy="106" r="3" fill="#38BDF8"/>
+                  <circle cx="215" cy="106" r="3" fill="#38BDF8"/>
+                  <circle cx="235" cy="110" r="3" fill="#38BDF8"/>
+                  <!-- Ojos -->
+                  <circle cx="172" cy="125" r="4.5" fill="#10B981"/>
+                  <circle cx="228" cy="125" r="4.5" fill="#10B981"/>
+                  <ellipse cx="172" cy="125" rx="14" ry="7" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <ellipse cx="228" cy="125" rx="14" ry="7" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="2 2"/>
+                  <!-- Nariz -->
+                  <circle cx="200" cy="135" r="3" fill="#06B6D4"/>
+                  <circle cx="200" cy="165" r="4" fill="#06B6D4"/>
+                  <circle cx="188" cy="172" r="3" fill="#06B6D4"/>
+                  <circle cx="212" cy="172" r="3" fill="#06B6D4"/>
+                  <!-- Boca -->
+                  <circle cx="180" cy="205" r="3" fill="#38BDF8"/>
+                  <circle cx="200" cy="202" r="3" fill="#38BDF8"/>
+                  <circle cx="220" cy="205" r="3" fill="#38BDF8"/>
+                  <circle cx="200" cy="216" r="3" fill="#38BDF8"/>
+                  <!-- Mentón y mandíbula -->
+                  <circle cx="200" cy="245" r="3.5" fill="#06B6D4"/>
+                  <circle cx="160" cy="215" r="3" fill="#06B6D4"/>
+                  <circle cx="240" cy="215" r="3" fill="#06B6D4"/>
+
+                  <!-- Malla geométrica conectora (Triangulación de Delaunay) -->
+                  <g stroke="#06B6D4" stroke-opacity="0.35" stroke-width="1.2">
+                    <line x1="200" y1="70" x2="170" y2="80"/>
+                    <line x1="200" y1="70" x2="230" y2="80"/>
+                    <line x1="170" y1="80" x2="165" y2="110"/>
+                    <line x1="230" y1="80" x2="235" y2="110"/>
+                    <line x1="165" y1="110" x2="185" y2="106"/>
+                    <line x1="185" y1="106" x2="200" y2="70"/>
+                    <line x1="200" y1="70" x2="215" y2="106"/>
+                    <line x1="215" y1="106" x2="235" y2="110"/>
+                    
+                    <line x1="185" y1="106" x2="200" y2="135"/>
+                    <line x1="215" y1="106" x2="200" y2="135"/>
+                    <line x1="165" y1="110" x2="172" y2="125"/>
+                    <line x1="235" y1="110" x2="228" y2="125"/>
+                    
+                    <line x1="172" y1="125" x2="200" y2="135"/>
+                    <line x1="228" y1="125" x2="200" y2="135"/>
+                    <line x1="200" y1="135" x2="200" y2="165"/>
+                    <line x1="200" y1="165" x2="188" y2="172"/>
+                    <line x1="200" y1="165" x2="212" y2="172"/>
+                    
+                    <line x1="188" y1="172" x2="180" y2="205"/>
+                    <line x1="212" y1="172" x2="220" y2="205"/>
+                    <line x1="200" y1="165" x2="200" y2="202"/>
+                    <line x1="180" y1="205" x2="200" y2="202"/>
+                    <line x1="200" y1="202" x2="220" y2="205"/>
+                    <line x1="180" y1="205" x2="200" y2="216"/>
+                    <line x1="220" y1="205" x2="200" y2="216"/>
+                    <line x1="200" y1="216" x2="200" y2="245"/>
+                    <line x1="180" y1="205" x2="160" y2="215"/>
+                    <line x1="220" y1="205" x2="240" y2="215"/>
+                    <line x1="160" y1="215" x2="200" y2="245"/>
+                    <line x1="240" y1="215" x2="200" y2="245"/>
+                  </g>
+                </svg>
+
+                <!-- Cuadro delimitador con esquinas biométricas -->
+                <div class="absolute inset-x-12 inset-y-6 sm:inset-x-16 sm:inset-y-8 border border-cyan-500/40 rounded-lg pointer-events-none">
+                  <!-- Esquinas estilizadas -->
+                  <div class="absolute -top-1 -left-1 w-5 h-5 border-t-3 border-l-3 border-cyan-400"></div>
+                  <div class="absolute -top-1 -right-1 w-5 h-5 border-t-3 border-r-3 border-cyan-400"></div>
+                  <div class="absolute -bottom-1 -left-1 w-5 h-5 border-b-3 border-l-3 border-cyan-400"></div>
+                  <div class="absolute -bottom-1 -right-1 w-5 h-5 border-b-3 border-r-3 border-cyan-400"></div>
+                  
+                  <!-- Línea láser de escaneo animada -->
+                  <div class="w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#06b6d4] animate-scan-line"></div>
+                </div>
+
+                <!-- Insignia flotante de estado en el visor -->
+                <div class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md border border-emerald-500/50 rounded-lg px-2.5 py-1 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span class="text-[11px] font-mono text-emerald-300 font-semibold">IDENTIFICADO: 99.85%</span>
+                </div>
+
+                <div class="absolute top-3 right-3 bg-slate-900/90 backdrop-blur-md border border-cyan-500/40 rounded-lg px-2.5 py-1 text-[11px] font-mono text-cyan-300">
+                  ID: #USR-7402
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Panel de controles del visor -->
+            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span class="text-white font-medium">Algoritmo:</span>
+                <span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800 font-mono">FaceNet v4</span>
+              </div>
+              <button onclick="simularNuevoRostro()" class="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Re-escanear</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- BARRA DE RECURSOS E ICONOS DE APOYO        -->
+    <!-- (Huella, Rapidez, Seguridad, Inteligencia) -->
+    <!-- ========================================== -->
+    <section id="tecnologia" class="bg-white py-10 border-y border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-8">
+          <h2 class="text-xs uppercase tracking-widest font-bold text-[#2563EB]">Arquitectura Biométrica</h2>
+          <p class="text-2xl font-extrabold text-[#111827] mt-1">Ecosistema Integral de Protección</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          
+          <!-- Item 1: Huella Digital / Malla -->
+          <div class="bg-[#F3F4F6] hover:bg-blue-50/50 p-5 rounded-2xl text-center border border-gray-100 transition duration-200 flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-100 flex items-center justify-center mb-3">
+              <!-- Icono vectorial calcado de icon-huella.svg -->
+              <svg class="w-9 h-9" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 15C32 15 20 28 20 46C20 62 28 85 28 85" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+                <path d="M38 85C38 85 30 65 30 46C30 33 39 25 50 25C61 25 70 33 70 46C70 65 62 85 62 85" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+                <path d="M50 36C44 36 39 40 39 47C39 56 45 68 45 76" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+                <path d="M50 50C54 50 59 55 59 64C59 74 54 86 54 86" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+                <path d="M72 80C77 68 80 56 80 46C80 28 68 15 50 15" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-gray-900 text-sm">Huella y Rostro</h3>
+            <p class="text-xs text-[#6B7280] mt-1">Fusión multimodal de datos biométricos únicos.</p>
+          </div>
+
+          <!-- Item 2: Rapidez / Rayo -->
+          <div class="bg-[#F3F4F6] hover:bg-blue-50/50 p-5 rounded-2xl text-center border border-gray-100 transition duration-200 flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-3">
+              <!-- Icono vectorial calcado de icon-rapidez.svg -->
+              <svg class="w-9 h-9" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="42" fill="#DBEAFE"/>
+                <path d="M54 18L30 52H48L44 82L68 46H50L54 18Z" fill="#2563EB"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-gray-900 text-sm">Ultrarrápido</h3>
+            <p class="text-xs text-[#6B7280] mt-1">Respuesta y validación en menos de 200ms.</p>
+          </div>
+
+          <!-- Item 3: Seguridad / Escudo -->
+          <div class="bg-[#F3F4F6] hover:bg-blue-50/50 p-5 rounded-2xl text-center border border-gray-100 transition duration-200 flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center mb-3">
+              <!-- Icono vectorial calcado de icon-seguridad.svg -->
+              <svg class="w-9 h-9" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 12L20 25V52C20 73 33 87 50 92C67 87 80 73 80 52V25L50 12Z" fill="#2563EB"/>
+                <path d="M36 50L45 59L65 39" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-gray-900 text-sm">Antifraude Liveness</h3>
+            <p class="text-xs text-[#6B7280] mt-1">Detección de vida contra fotos impresas o pantallas.</p>
+          </div>
+
+          <!-- Item 4: Inteligencia Artificial / Chip -->
+          <div class="bg-[#F3F4F6] hover:bg-blue-50/50 p-5 rounded-2xl text-center border border-gray-100 transition duration-200 flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center mb-3">
+              <svg class="w-9 h-9 text-[#8B5CF6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+                <rect x="9" y="9" width="6" height="6" stroke-width="2"/>
+                <path stroke-linecap="round" stroke-width="2" d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-gray-900 text-sm">Redes Convolucionales</h3>
+            <p class="text-xs text-[#6B7280] mt-1">Deep Learning entrenado con más de 10M de vectores.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================== -->
+    <!-- SESIÓN 3 & 5: SECCIÓN DE CARDS (CARD 1 Y CARD 2)     -->
+    <!-- Grid 1 col en móvil (grid-cols-1) y 2 en md:grid-cols-2 -->
+    <!-- ==================================================== -->
+    <section id="servicios" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+      
+      <!-- Título de Sección -->
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-xs uppercase tracking-widest font-extrabold text-[#2563EB]">Servicios Principales</h2>
+        <p class="text-3xl sm:text-4xl font-extrabold text-[#111827] mt-2">Módulos de Seguridad y Reconocimiento</p>
+        <p class="text-[#6B7280] text-sm sm:text-base mt-2">Componentes requeridos en la Guía SENA desarrollados con clases utilitarias de Tailwind CSS.</p>
+      </div>
+
+      <!-- Contenedor Responsive Grid (Sesión 3) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+        
+        <!-- ======================= -->
+        <!-- CARD 1: Detección Facial -->
+        <!-- ======================= -->
+        <article class="bg-white rounded-2xl p-7 lg:p-9 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col justify-between group">
+          <div>
+            <!-- Encabezado de la Card con Icono -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center p-2.5 group-hover:scale-105 transition-transform duration-200">
+                <!-- Icono de Detección Facial -->
+                <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 32V18H32" stroke="#2563EB" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M82 32V18H68" stroke="#2563EB" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M18 68V82H32" stroke="#2563EB" stroke-width="7" stroke-linecap="round"/>
+                  <path d="M82 68V82H68" stroke="#2563EB" stroke-width="7" stroke-linecap="round"/>
+                  <circle cx="38" cy="45" r="4.5" fill="#2563EB"/>
+                  <circle cx="62" cy="45" r="4.5" fill="#2563EB"/>
+                  <path d="M50 50V58" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M38 66C44 71 56 71 62 66" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="bg-blue-100 text-[#2563EB] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Módulo 01</span>
+            </div>
+
+            <!-- Título y Texto de Card 1 -->
+            <h3 class="text-2xl font-bold text-[#111827] group-hover:text-[#2563EB] transition-colors">
+              Detección Facial
+            </h3>
+            
+            <p class="text-[#6B7280] text-base mt-3 leading-relaxed">
+              Identifica rostros en tiempo real con alta precisión. Procesa múltiples ángulos faciales instantáneamente garantizando la identidad de los usuarios.
+            </p>
+
+            <!-- Lista de Características -->
+            <ul class="mt-6 space-y-2.5 text-sm text-gray-700">
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Mapeo 3D de 68 puntos geométricos faciales.</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Resistente a cambios de iluminación, gafas y vello facial.</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Soporte para video en vivo (Cámaras IP / Webcams).</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Botón de Card 1 -->
+          <div class="mt-8 pt-5 border-t border-gray-100">
+            <button onclick="abrirModalDetalle('deteccion')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-200">
+              <span>Ver más</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- ============================= -->
+        <!-- CARD 2: Seguridad Inteligente -->
+        <!-- ============================= -->
+        <article class="bg-white rounded-2xl p-7 lg:p-9 shadow-md hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col justify-between group">
+          <div>
+            <!-- Encabezado de la Card con Icono -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-16 h-16 rounded-2xl bg-cyan-50 border border-cyan-100 flex items-center justify-center p-2.5 group-hover:scale-105 transition-transform duration-200">
+                <!-- Icono de Seguridad Inteligente (Escudo con check) -->
+                <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M50 14L22 26V52C22 71 34 84 50 89C66 84 78 71 78 52V26L50 14Z" fill="#06B6D4"/>
+                  <path d="M37 50L46 59L64 41" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="bg-cyan-100 text-[#06B6D4] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Módulo 02</span>
+            </div>
+
+            <!-- Título y Texto de Card 2 -->
+            <h3 class="text-2xl font-bold text-[#111827] group-hover:text-[#06B6D4] transition-colors">
+              Seguridad Inteligente
+            </h3>
+            
+            <p class="text-[#6B7280] text-base mt-3 leading-relaxed">
+              Protege tu información con tecnología avanzada y encriptación de extremo a extremo para asegurar la privacidad biométrica sin almacenar fotografías directas.
+            </p>
+
+            <!-- Lista de Características -->
+            <ul class="mt-6 space-y-2.5 text-sm text-gray-700">
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Vectores numéricos hash irreversibles (Zero-Knowledge).</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Cumplimiento estricto con normativas GDPR y Habeas Data.</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-[#10B981] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span>Auditoría de accesos y alertas preventivas en tiempo real.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Botón de Card 2 -->
+          <div class="mt-8 pt-5 border-t border-gray-100">
+            <button onclick="abrirModalDetalle('seguridad')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-200">
+              <span>Ver más</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN INTERACTIVA: SIMULADOR DE PRUEBA   -->
+    <!-- Demostración pedagógica segura sin cámara  -->
+    <!-- ========================================== -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
+        
+        <!-- Decoración de fondo -->
+        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-2xl">
+          <span class="bg-white/20 text-cyan-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
+            Entorno de Aprendizaje SENA
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 leading-tight">
+            ¿Listo para comprobar la precisión biométrica?
+          </h2>
+          <p class="text-blue-100 mt-3 text-base sm:text-lg">
+            Experimenta el proceso de autenticación facial paso a paso mediante nuestro simulador pedagógico interactivo.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4">
+            <button onclick="abrirSimulador('demo')" class="bg-white text-[#2563EB] hover:bg-gray-100 font-bold px-6 py-3.5 rounded-xl shadow-lg transition duration-200">
+              Iniciar Simulación Facial
+            </button>
+            <a href="#contacto" class="bg-blue-800/80 hover:bg-blue-900 text-white font-semibold px-6 py-3.5 rounded-xl border border-blue-400/40 transition duration-200">
+              Documentación del Proyecto
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECCIÓN CONTACTO Y VALIDADOR               -->
+    <!-- ========================================== -->
+    <section id="contacto" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900">¿Tienes dudas sobre la implementación?</h3>
+            <p class="text-[#6B7280] mt-2 text-sm">
+              Esta maqueta educativa fue construida siguiendo los lineamientos de maquetación responsive con Tailwind CSS para el Servicio Nacional de Aprendizaje (SENA).
+            </p>
+            <div class="mt-4 space-y-2 text-sm text-gray-700">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                <span>Despliegue compatible con GitHub Pages y Vercel.</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+                <span>Diseño 100% responsivo para móviles, tablets y monitores.</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#06B6D4]"></span>
+                <span>Sin dependencias externas pesadas, HTML puro con Tailwind CDN.</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center">
+            <h4 class="font-bold text-gray-800 mb-2">Comprobación de Estado</h4>
+            <div class="inline-flex items-center gap-2 text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-lg text-sm font-semibold mb-4">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              <span>Maqueta Lista para Entrega</span>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">Haz clic para generar el resumen listo para adjuntar en tu plataforma:</p>
+            <button onclick="copiarDetallesEntrega()" class="w-full bg-[#111827] hover:bg-black text-white text-sm font-medium py-2.5 px-4 rounded-lg transition duration-200">
+              Copiar Resumen para el Formulario SENA
+            </button>
+            <p id="copiado-toast" class="text-xs text-emerald-600 font-semibold mt-2 hidden">¡Copiado al portapapeles!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- SESIÓN 4: FOOTER (PIE DE PÁGINA)           -->
+  <!-- bg-[#111827] text-gray-300                 -->
+  <!-- Responsive: móvil apilado, desktop flex-row-->
+  <!-- ========================================== -->
+  <footer class="bg-[#111827] text-gray-300 py-12 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Fila Principal con Enlaces y Logo -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-gray-800 text-center md:text-left">
+        
+        <!-- Bloque 1: Identidad -->
+        <div class="md:col-span-2 space-y-3">
+          <div class="flex items-center justify-center md:justify-start gap-3">
+            <div class="w-9 h-9 bg-white rounded-lg p-1 flex items-center justify-center">
+              <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 36V22H36" stroke="#06B6D4" stroke-width="8" stroke-linecap="round"/>
+                <path d="M78 36V22H64" stroke="#06B6D4" stroke-width="8" stroke-linecap="round"/>
+                <path d="M22 64V78H36" stroke="#06B6D4" stroke-width="8" stroke-linecap="round"/>
+                <path d="M78 64V78H64" stroke="#06B6D4" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="40" cy="45" r="4.5" fill="#2563EB"/>
+                <circle cx="60" cy="45" r="4.5" fill="#2563EB"/>
+                <path d="M37 57C41 63 50 65 53 65C59 65 63 57 63 57" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="text-2xl font-extrabold tracking-tight text-white">FaceID</span>
+          </div>
+          <p class="text-gray-400 text-sm max-w-sm mx-auto md:mx-0">
+            Plataforma didáctica de reconocimiento facial biométrico diseñada con Tailwind CSS. Estructura modular, código semántico y adaptación móvil.
+          </p>
+          <div class="text-xs text-slate-500">
+            SENA — Centro de Formación en Tecnologías de la Información
+          </div>
+        </div>
+
+        <!-- Bloque 2: Enlaces Rápidos -->
+        <div>
+          <h4 class="font-bold text-white text-sm uppercase tracking-wider mb-3">Enlaces</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#inicio" class="text-gray-400 hover:text-white transition duration-150">Inicio</a></li>
+            <li><a href="#servicios" class="text-gray-400 hover:text-white transition duration-150">Servicios</a></li>
+            <li><a href="#tecnologia" class="text-gray-400 hover:text-white transition duration-150">Tecnología</a></li>
+            <li><a href="#contacto" class="text-gray-400 hover:text-white transition duration-150">Contacto</a></li>
+          </ul>
+        </div>
+
+        <!-- Bloque 3: Legal & Privacidad -->
+        <div>
+          <h4 class="font-bold text-white text-sm uppercase tracking-wider mb-3">Privacidad</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><span class="hover:text-white cursor-pointer" onclick="toggleModal('modal-privacidad')">Nota de Privacidad</span></li>
+            <li><span class="hover:text-white cursor-pointer" onclick="toggleModal('deploy-modal')">Publicación GitHub</span></li>
+            <li><span class="hover:text-white cursor-pointer" onclick="toggleModal('modal-terminos')">Licencia Educativa</span></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Fila Inferior: Redes Sociales y Derechos Reservados -->
+      <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+        
+        <!-- Redes Sociales vectoriales (Facebook, Instagram, LinkedIn) -->
+        <div class="flex items-center space-x-4">
+          <!-- Facebook -->
+          <a href="#" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 hover:text-white transition" aria-label="Facebook">
+            <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+          </a>
+          <!-- Instagram -->
+          <a href="#" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition" aria-label="Instagram">
+            <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <!-- LinkedIn -->
+          <a href="#" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-500 hover:text-white transition" aria-label="LinkedIn">
+            <svg class="w-4 h-4 fill-currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
+        </div>
+
+        <!-- Derechos Reservados (Texto oficial de la guía) -->
+        <p class="text-center md:text-right font-medium">
+          &copy; 2026 FaceID. Todos los derechos reservados.
+        </p>
+
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SIMULADOR INTERACTIVO FACIAL        -->
+  <!-- ========================================== -->
+  <div id="simulador-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Botón cerrar -->
+      <button onclick="toggleModal('simulador-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-cyan-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div>
+          <h3 id="simulador-titulo" class="text-lg font-bold text-white">Simulador Biométrico FaceID</h3>
+          <p class="text-xs text-slate-400">Análisis y verificación en tiempo de ejecución</p>
+        </div>
+      </div>
+
+      <!-- Animación de Proceso -->
+      <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 text-center relative overflow-hidden">
+        <div id="simulador-radar" class="w-24 h-24 mx-auto rounded-full border-2 border-dashed border-cyan-400 flex items-center justify-center relative mb-3 animate-spin">
+          <div class="w-16 h-16 rounded-full border border-blue-500/40"></div>
+          <div class="w-2 h-2 rounded-full bg-cyan-400 absolute top-1"></div>
+        </div>
+
+        <div id="simulador-estado-texto" class="font-mono text-cyan-300 font-bold text-sm tracking-wide">
+          EXTRAYENDO CARACTERÍSTICAS FACIALES...
+        </div>
+        
+        <!-- Barra de Progreso -->
+        <div class="w-full bg-slate-800 rounded-full h-2 mt-4 overflow-hidden">
+          <div id="simulador-progreso" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full w-1/4 transition-all duration-500"></div>
+        </div>
+
+        <div id="simulador-subtexto" class="text-xs text-slate-400 mt-2 font-mono">
+          Detectando puntos nodales: Distancia interocular, puente nasal y contorno mandibular.
+        </div>
+      </div>
+
+      <!-- Resumen de Resultados -->
+      <div id="simulador-resultado" class="hidden mt-4 p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-left">
+        <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm mb-1">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          <span>AUTENTICACIÓN EXITOSA</span>
+        </div>
+        <p class="text-xs text-emerald-200">
+          Similitud biométrica: <span class="font-mono font-bold">99.88%</span>. El vector numérico coincide con las credenciales registradas. Cifrado AES-256 verificado.
+        </p>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="toggleModal('simulador-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-xl transition">
+          Cerrar
+        </button>
+        <button onclick="reiniciarSimulacion()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl shadow transition">
+          Repetir Prueba
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: GUÍA DE DESPLIEGUE EN GITHUB PAGES  -->
+  <!-- Para cumplir la entrega del ejercicio      -->
+  <!-- ========================================== -->
+  <div id="deploy-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative text-left">
+      
+      <button onclick="toggleModal('deploy-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Guía para Publicar en GitHub Pages</h3>
+          <p class="text-xs text-gray-500">Pasos exactos para desplegar y obtener tu enlace público</p>
+        </div>
+      </div>
+
+      <div class="space-y-4 text-sm text-gray-600">
+        <div class="p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <p class="font-semibold text-gray-800">1. Crear el repositorio en GitHub:</p>
+          <p class="text-xs mt-1">Crea un nuevo repositorio público llamado <code class="bg-gray-200 px-1.5 py-0.5 rounded text-blue-700 font-mono">reconocimiento-facial-tailwind</code>.</p>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <p class="font-semibold text-gray-800">2. Subir este archivo como index.html:</p>
+          <p class="text-xs mt-1">Guarda este archivo con el nombre exacto de <code class="bg-gray-200 px-1.5 py-0.5 rounded text-blue-700 font-mono">index.html</code> en la raíz de tu repositorio.</p>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <p class="font-semibold text-gray-800">3. Activar GitHub Pages:</p>
+          <p class="text-xs mt-1">Dirígete a <strong>Settings &gt; Pages</strong> en tu repositorio. En <strong>Branch</strong> selecciona <code class="font-mono text-xs bg-gray-200 px-1 py-0.5 rounded">main</code> (o <code class="font-mono text-xs bg-gray-200 px-1 py-0.5 rounded">master</code>) y la carpeta <code class="font-mono text-xs bg-gray-200 px-1 py-0.5 rounded">/ (root)</code>. Haz clic en <strong>Save</strong>.</p>
+        </div>
+
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800">
+          <p class="font-bold text-xs uppercase tracking-wider">Tu URL resultante para la entrega será:</p>
+          <code class="block font-mono text-xs mt-1 break-all bg-emerald-100 p-2 rounded text-emerald-950 font-bold">
+            https://&lt;tu-usuario&gt;.github.io/reconocimiento-facial-tailwind/
+          </code>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button onclick="toggleModal('deploy-modal')" class="px-5 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INFORMACIÓN DE DETALLE DE SERVICIOS -->
+  <!-- ========================================== -->
+  <div id="detalle-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative text-left">
+      <button onclick="toggleModal('detalle-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4" id="detalle-icono">
+        <!-- Reemplazado dinámicamente -->
+      </div>
+
+      <h3 id="detalle-titulo" class="text-2xl font-bold text-gray-900">Detalle</h3>
+      <p id="detalle-desc" class="text-gray-600 text-sm mt-2 leading-relaxed"></p>
+
+      <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2 text-xs text-gray-700" id="detalle-puntos">
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button onclick="toggleModal('detalle-modal')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: NOTA DE PRIVACIDAD DIDÁCTICA        -->
+  <!-- ========================================== -->
+  <div id="modal-privacidad" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-left">
+      <h3 class="text-xl font-bold text-gray-900">Nota de Privacidad y Ética</h3>
+      <div class="mt-3 text-sm text-gray-600 space-y-2">
+        <p>Esta aplicación es un proyecto educativo desarrollado para fines de formación técnica en el SENA.</p>
+        <p><strong>Privacidad garantizada:</strong> No solicita acceso a hardware de cámara web real, no recopila imágenes de personas y no procesa datos biométricos sensibles de usuarios externos.</p>
+        <p>Todo el funcionamiento visual se realiza mediante simulaciones vectoriales y clases utilitarias de Tailwind CSS.</p>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="toggleModal('modal-privacidad')" class="px-4 py-2 bg-gray-800 text-white font-medium text-sm rounded-xl">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT LIGERO Y FUNCIONAL              -->
+  <!-- ========================================== -->
+  <script>
+    // Control del Menú Hamburguesa en Móvil
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const closeIcon = document.getElementById('close-icon');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      const isExpanded = mobileMenu.classList.contains('hidden');
+      if (isExpanded) {
+        mobileMenu.classList.remove('hidden');
+        hamburgerIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+      } else {
+        mobileMenu.classList.add('hidden');
+        hamburgerIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      }
+    });
+
+    function closeMobileMenu() {
+      mobileMenu.classList.add('hidden');
+      hamburgerIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
+    }
+
+    // Funciones genéricas de modales
+    function toggleModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.toggle('hidden');
+      }
+    }
+
+    // Modal de Detalles para Cards (Ver Más)
+    function abrirModalDetalle(tipo) {
+      const iconoEl = document.getElementById('detalle-icono');
+      const tituloEl = document.getElementById('detalle-titulo');
+      const descEl = document.getElementById('detalle-desc');
+      const puntosEl = document.getElementById('detalle-puntos');
+
+      if (tipo === 'deteccion') {
+        iconoEl.innerHTML = `<svg class="w-6 h-6 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        tituloEl.textContent = 'Módulo 01: Detección Facial';
+        descEl.textContent = 'Nuestro sistema de detección facial realiza una segmentación facial en tiempo real a través de modelos convolucionales ligeros optimizados para navegadores web y servidores periféricos.';
+        puntosEl.innerHTML = `
+          <div><strong>Precisión de Reconocimiento:</strong> 99.8% en condiciones variables de luz.</div>
+          <div><strong>Extracción de Puntos:</strong> Triangulación automática de ojos, nariz, pómulos y línea de mentón.</div>
+          <div><strong>Protección Anti-Spoofing:</strong> Análisis de profundidad y microexpresiones para certificar presencia humana real.</div>
+        `;
+      } else {
+        iconoEl.innerHTML = `<svg class="w-6 h-6 text-[#06B6D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`;
+        tituloEl.textContent = 'Módulo 02: Seguridad Inteligente';
+        descEl.textContent = 'Protección integral basada en criptografía de vanguardia. Las imágenes faciales se convierten inmediatamente en representaciones matemáticas unidireccionales (hashes vectoriales).';
+        puntosEl.innerHTML = `
+          <div><strong>Cifrado de Vectores:</strong> AES-256 bits y firmas digitales SHA-512.</div>
+          <div><strong>No Almacenamiento de Fotos:</strong> Imposible reconstruir el rostro a partir del hash biométrico.</div>
+          <div><strong>Conformidad Normativa:</strong> Diseñado bajo el principio de privacidad por diseño (Privacy by Design).</div>
+        `;
+      }
+
+      toggleModal('detalle-modal');
+    }
+
+    // Simulador interactivo FaceID (Conoce más / Simular Escaneo)
+    let simulationTimer = null;
+
+    function abrirSimulador(modo) {
+      const modal = document.getElementById('simulador-modal');
+      const titulo = document.getElementById('simulador-titulo');
+      
+      if (modo === 'autenticar') {
+        titulo.textContent = 'Autenticación de Usuario FaceID';
+      } else {
+        titulo.textContent = 'Simulador de Reconocimiento Facial';
+      }
+
+      modal.classList.remove('hidden');
+      reiniciarSimulacion();
+    }
+
+    function reiniciarSimulacion() {
+      clearTimeout(simulationTimer);
+      const radar = document.getElementById('simulador-radar');
+      const estadoTexto = document.getElementById('simulador-estado-texto');
+      const subtexto = document.getElementById('simulador-subtexto');
+      const barra = document.getElementById('simulador-progreso');
+      const resultado = document.getElementById('simulador-resultado');
+
+      resultado.classList.add('hidden');
+      radar.classList.remove('hidden');
+      radar.classList.add('animate-spin');
+      barra.style.width = '20%';
+      estadoTexto.textContent = 'INICIALIZANDO DETECTOR DE PUNTOS...';
+      subtexto.textContent = 'Calculando calibración de sensor y contraste...';
+
+      simulationTimer = setTimeout(() => {
+        barra.style.width = '65%';
+        estadoTexto.textContent = 'COMPARANDO CON BASE VECTORIAL...';
+        subtexto.textContent = 'Verificando vectores 128-d con precisión biométrica...';
+
+        simulationTimer = setTimeout(() => {
+          barra.style.width = '100%';
+          radar.classList.add('hidden');
+          radar.classList.remove('animate-spin');
+          estadoTexto.textContent = 'PROCESO FINALIZADO';
+          subtexto.textContent = 'Identidad validada contra registros autorizados.';
+          resultado.classList.remove('hidden');
+        }, 1200);
+
+      }, 1000);
+    }
+
+    // Efecto en el HUD de la portada: botón "Re-escanear"
+    function simularNuevoRostro() {
+      const button = event.currentTarget;
+      button.classList.add('opacity-50', 'pointer-events-none');
+      button.innerHTML = `<span>Escaneando...</span>`;
+      
+      setTimeout(() => {
+        button.classList.remove('opacity-50', 'pointer-events-none');
+        button.innerHTML = `
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Re-escanear</span>
+        `;
+      }, 1200);
+    }
+
+    // Copiar plantilla de entrega al portapapeles
+    function copiarDetallesEntrega() {
+      const texto = `EVIDENCIA DE APRENDIZAJE SENA - RECONOCIMIENTO FACIAL CON TAILWIND CSS\n` +
+                    `- Repositorio GitHub: https://github.com/TU_USUARIO/reconocimiento-facial-tailwind\n` +
+                    `- Enlace de despliegue en GitHub Pages: https://TU_USUARIO.github.io/reconocimiento-facial-tailwind/\n` +
+                    `- Tecnologías implementadas: HTML5 semántico, Tailwind CSS CDN (Mobile-First), CSS Grid, Flexbox, SVG embebido.`;
+
+      const input = document.createElement('textarea');
+      input.value = texto;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+
+      const toast = document.getElementById('copiado-toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>
